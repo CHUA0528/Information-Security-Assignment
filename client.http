@@ -1,0 +1,91 @@
+GET http://localhost:3000/login 
+Content-Type: application/json
+
+# {
+#    "user_id": "R2769",
+#    "password": "mudmud"
+# }
+
+#{
+#    "user_id": "S2203",
+#    "password": "stellar"
+#}
+
+{
+    "user_id": "A3100",
+    "password": "lyla"
+}
+
+###
+GET http://localhost:3000/finduser
+Content-Type: application/json 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDg3M2EyNDhjMGZmYzc5NGQ4ZGMxNzEiLCJ1c2VyX2lkIjoiQTMxMDAiLCJwYXNzd29yZCI6IiQyYiQxMCRmM1I0LklYc2l4aFRtcnlXOGVVYzEuM1cxRDVpMWEzd2xtSlNnSHBQdDlRY3Z3aWVlYUR5RyIsIm5hbWUiOiJyb2NrZXQiLCJ1bml0IjoibWFuYWdlbWVudCIsImhwX251bSI6IjMxMjMyIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAzMjk4ODIzLCJleHAiOjE3MDMzMDI0MjN9.2vc1EuQ23Qzqyi-TUbwneQnre_sun3UZ-vDs-RbtkYA
+
+{
+    "user_id": "R2769"
+}
+
+###
+POST http://localhost:3000/registeruser
+Content-Type: application/json 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDg3M2EyNDhjMGZmYzc5NGQ4ZGMxNzEiLCJ1c2VyX2lkIjoiQTMxMDAiLCJwYXNzd29yZCI6IiQyYiQxMCRmM1I0LklYc2l4aFRtcnlXOGVVYzEuM1cxRDVpMWEzd2xtSlNnSHBQdDlRY3Z3aWVlYUR5RyIsIm5hbWUiOiJyb2NrZXQiLCJ1bml0IjoibWFuYWdlbWVudCIsImhwX251bSI6IjMxMjMyIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAzMjk4ODIzLCJleHAiOjE3MDMzMDI0MjN9.2vc1EuQ23Qzqyi-TUbwneQnre_sun3UZ-vDs-RbtkYA
+
+{
+    "user_id": "R5552",
+    "password": "NoPeeking",
+    "name": "NotAResident",
+    "unit": "T-420-10",
+    "hp_num" : "why are there alphabets in hp number",
+    "role" : "resident"
+}
+
+###
+PATCH http://localhost:3000/updateUser
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDg3M2EyNDhjMGZmYzc5NGQ4ZGMxNzEiLCJ1c2VyX2lkIjoiQTMxMDAiLCJwYXNzd29yZCI6IiQyYiQxMCRmM1I0LklYc2l4aFRtcnlXOGVVYzEuM1cxRDVpMWEzd2xtSlNnSHBQdDlRY3Z3aWVlYUR5RyIsIm5hbWUiOiJyb2NrZXQiLCJ1bml0IjoibWFuYWdlbWVudCIsImhwX251bSI6IjMxMjMyIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAzMjk4ODIzLCJleHAiOjE3MDMzMDI0MjN9.2vc1EuQ23Qzqyi-TUbwneQnre_sun3UZ-vDs-RbtkYA
+
+{
+    "user_id": "R5552",
+    "name": "boyiboyiii",
+    "password" : "sheela9103i",
+    "unit": "T-7-5",
+    "hp_num": "0173902719"
+}
+
+###
+DELETE http://localhost:3000/deleteUser
+Content-Type: application/json 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDg3M2EyNDhjMGZmYzc5NGQ4ZGMxNzEiLCJ1c2VyX2lkIjoiQTMxMDAiLCJwYXNzd29yZCI6IiQyYiQxMCRmM1I0LklYc2l4aFRtcnlXOGVVYzEuM1cxRDVpMWEzd2xtSlNnSHBQdDlRY3Z3aWVlYUR5RyIsIm5hbWUiOiJyb2NrZXQiLCJ1bml0IjoibWFuYWdlbWVudCIsImhwX251bSI6IjMxMjMyIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAzMjk4ODIzLCJleHAiOjE3MDMzMDI0MjN9.2vc1EuQ23Qzqyi-TUbwneQnre_sun3UZ-vDs-RbtkYA
+
+{
+    "user_id": "R5552"
+}
+
+###
+POST http://localhost:3000/registervisitor_pass
+Content-Type: application/json 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDg3M2EyNDhjMGZmYzc5NGQ4ZGMxNzEiLCJ1c2VyX2lkIjoiQTMxMDAiLCJwYXNzd29yZCI6IiQyYiQxMCRmM1I0LklYc2l4aFRtcnlXOGVVYzEuM1cxRDVpMWEzd2xtSlNnSHBQdDlRY3Z3aWVlYUR5RyIsIm5hbWUiOiJyb2NrZXQiLCJ1bml0IjoibWFuYWdlbWVudCIsImhwX251bSI6IjMxMjMyIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAzMzAwMzAzLCJleHAiOjE3MDMzMDM5MDN9.bFO2BCmJXzQJfLfgNP50Er2iZY7yeq0bUXLOtyOMo2I
+
+{
+    "ref" : "647112110",
+    "name": "zenitsu",
+    "IC_num": "111131-07-6121",
+    "car_num": "UTeM 5555",
+    "hp_num" : "012-61942211",
+    "pass": "DELIVERY_0A",
+    "category" : "DELIVERY",
+    "date" : "2023-06-30",
+    "unit" : "T-7-4"
+}
+
+###
+
+GET http://localhost:3000/findvisitor_passes
+Content-Type: application/json 
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NDg3M2EyNDhjMGZmYzc5NGQ4ZGMxNzEiLCJ1c2VyX2lkIjoiQTMxMDAiLCJwYXNzd29yZCI6IiQyYiQxMCRmM1I0LklYc2l4aFRtcnlXOGVVYzEuM1cxRDVpMWEzd2xtSlNnSHBQdDlRY3Z3aWVlYUR5RyIsIm5hbWUiOiJyb2NrZXQiLCJ1bml0IjoibWFuYWdlbWVudCIsImhwX251bSI6IjMxMjMyIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzAzMzAwMzAzLCJleHAiOjE3MDMzMDM5MDN9.bFO2BCmJXzQJfLfgNP50Er2iZY7yeq0bUXLOtyOMo2I
+
+{
+    "ref_num":"647112110"
+}
+
+###
