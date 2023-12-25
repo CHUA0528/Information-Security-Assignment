@@ -8,7 +8,7 @@ const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 6000;
 const{ MongoClient, ServerApiVersion } = require('mongodb');
 const uri = 'mongodb+srv://CHUA0528:CCF12345@chua.ch7khae.mongodb.net/';
 
@@ -102,7 +102,7 @@ async function login(data) {
 
   console.log("Alert! Alert! Someone is logging in!") //Display message to ensure function is called
   //Verify username is in the database
-  let verify = await user.find({user_id : data.user_id}).next();
+  let verify = await user.findOne({user_id : data.user_id});
   console.log(verify)
   if (verify){
     //verify password is correct
