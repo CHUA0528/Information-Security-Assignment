@@ -23,12 +23,12 @@ const document={
                 "user_id": {
                   "type": "string",
                   "description": "User ID",
-                  "example": "john_doe"
+                  "example": "A3100"
                 },
                 "password": {
                   "type": "string",
                   "description": "User password",
-                  "example": "password123"
+                  "example": "lyla"
                 }
               }
             }
