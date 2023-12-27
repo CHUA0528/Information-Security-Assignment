@@ -5,6 +5,14 @@ const document={
     title: "Visitor Management API",
     description: "API for handling visitor management"
   },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+
   "paths": {
     "/login": {
       "post": {
@@ -62,6 +70,7 @@ const document={
       "200": {
         
         "description": "Authentication successful",
+     
         "schema": {
           "type": "object",
           "properties": {
@@ -92,54 +101,9 @@ const document={
         }
       }
     }
-        // "responses": {
-        //   "200": {
-        //     "description": "Successful login",
-        //     "schema": {
-        //       "type": "object",
-        //       "properties": {
-        //         "message": {
-        //           "type": "string",
-        //           "example": "User has logged in!"
-        //         },
-        //         "welcome": {
-        //           "type": "string",
-        //           "example": "Welcome John Doe!"
-        //         },
-        //         "token": {
-        //           "type": "string",
-        //           "example": "your_generated_jwt_token"
-        //         }
-        //       }
-        //     }
-        //   },
-        //   "400": {
-        //     "description": "Invalid login credentials",
-        //     "schema": {
-        //       "type": "object",
-        //       "properties": {
-        //         "error": {
-        //           "type": "string",
-        //           "example": "No such user ID found D:"
-        //         }
-        //       }
-        //     }
-        //   },
-        //   "401": {
-        //     "description": "Authentication failed",
-        //     "schema": {
-        //       "type": "object",
-        //       "properties": {
-        //         "error": {
-        //           "type": "string",
-        //           "example": "Wrong password D: Forgotten your password?"
-        //         }
-        //       }
-        //     }
-        //   }
         
-      }
-    },
+  }
+},
   
   "/finduser": {
     "get": {
@@ -148,13 +112,6 @@ const document={
       "tags": ["User Management"],
       "parameters": [
         {
-          "name": "Authorization",
-          "in": "header",
-          "description": "JWT Authorization token",
-          "required": true,
-          "type": "string"
-        },
-        {
           "name": "user_id",
           "in": "query",
           "description": "User ID to find",
@@ -162,6 +119,10 @@ const document={
           "type": "string"
         }
       ],
+      "security":
+      {
+      "Bearer": []
+      },
       "responses": {
         "200": {"description": "Successful response"},
         "401": {"description": "Unauthorized"},
@@ -177,13 +138,6 @@ const document={
       "tags": ["User Management"],
       "parameters": [
         {
-          "name": "Authorization",
-          "in": "header",
-          "description": "JWT Authorization token",
-          "required": true,
-          "type": "string"
-        },
-        {
           "name": "User",
           "in": "body",
           "description": "User details for registration",
@@ -191,6 +145,10 @@ const document={
           "schema": {"$ref": "#/definitions/User"}
         }
       ],
+      "security":
+      {
+      "Bearer": []
+      },
       "responses": {
         "201": {"description": "User registered successfully"},
         "401": {"description": "Unauthorized"},
@@ -205,13 +163,7 @@ const document={
       "description": "Update user information (admin only)",
       "tags": ["User Management"],
       "parameters": [
-        {
-          "name": "Authorization",
-          "in": "header",
-          "description": "JWT Authorization token",
-          "required": true,
-          "type": "string"
-        },
+
         {
           "name": "User",
           "in": "body",
@@ -220,6 +172,10 @@ const document={
           "schema": {"$ref": "#/definitions/User"}
         }
       ],
+      "security":
+      {
+      "Bearer": []
+      },
       "responses": {
         "200": {"description": "User updated successfully"},
         "401": {"description": "Unauthorized"},
@@ -235,13 +191,6 @@ const document={
       "tags": ["User Management"],
       "parameters": [
         {
-          "name": "Authorization",
-          "in": "header",
-          "description": "JWT Authorization token",
-          "required": true,
-          "type": "string"
-        },
-        {
           "name": "user_id",
           "in": "query",
           "description": "User ID to delete",
@@ -249,6 +198,10 @@ const document={
           "type": "string"
         }
       ],
+      "security":
+      {
+      "Bearer": []
+      },
       "responses": {
         "200": {"description": "User deleted successfully"},
         "401": {"description": "Unauthorized"},
@@ -263,13 +216,7 @@ const document={
       "description": "Register a new visitor (admin only)",
       "tags": ["Visitor Management"],
       "parameters": [
-        {
-          "name": "Authorization",
-          "in": "header",
-          "description": "JWT Authorization token",
-          "required": true,
-          "type": "string"
-        },
+
         {
           "name": "Visitor",
           "in": "body",
@@ -278,6 +225,10 @@ const document={
           "schema": {"$ref": "#/definitions/Visitor"}
         }
       ],
+      "security":
+      {
+      "Bearer": []
+      },
       "responses": {
         "201": {"description": "Visitor registered successfully"},
         "401": {"description": "Unauthorized"},
@@ -292,13 +243,7 @@ const document={
       "description": "Find visitors based on specified criteria (admin or security only)",
       "tags": ["Visitor Management"],
       "parameters": [
-        {
-          "name": "Authorization",
-          "in": "header",
-          "description": "JWT Authorization token",
-          "required": true,
-          "type": "string"
-        },
+
         {
           "name": "criteria",
           "in": "query",
@@ -307,6 +252,10 @@ const document={
           "type": "string"
         }
       ],
+      "security":
+      {
+      "Bearer": []
+      },
       "responses": {
         "200": {"description": "Successful response"},
         "401": {"description": "Unauthorized"},

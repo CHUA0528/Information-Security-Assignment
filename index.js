@@ -22,39 +22,12 @@ const client = new MongoClient(uri, {
   });
 
   client.connect();
-// var axios = require('axios');
-// var data = JSON.stringify({
-//     "collection": "users",
-//     "database": "Visitor_Management_v1",
-//     "dataSource": "CHUA",
-//     "projection": {
-//         "_id": 1
-//     }
-// });
-            
-// var config = {
-//     method: 'post',
-//     url: 'https://ap-southeast-1.aws.data.mongodb-api.com/app/data-poxgq/endpoint/data/v1/action/findOne',
-//     headers: {
-//       'Content-Type': 'application/json',
-//       'Access-Control-Request-Headers': 'port',
-//       'api-key': 'CHUA',
-//     },
-//     data: data
-// };
-            
-// axios(config)
-//     .then(function (response) {
-//         console.log(JSON.stringify(response.data));
-//     })
-//     .catch(function (error) {
-//         console.log(error);
-//     });
 
-  //variables to define which collection used
+
+//variables to define which collection used
 //const admin = client.db("Visitor_Management_v1").collection("admin")
 const user = client.db("Visitor_Management_v1").collection("users")
-const visitor_passes = client.db("Visitor_Management_v1").collection("visitor")
+const visitor = client.db("Visitor_Management_v1").collection("visitor")
 
 //decode of requests
 app.use(express.json());
@@ -70,10 +43,6 @@ app.listen(port, () => {
 
  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-
-
-
- 
  
 //login GET request
 app.post ('/login', async (req, res) => {
@@ -100,65 +69,11 @@ app.post ('/login', async (req, res) => {
       res.send(errorMessage() + result)
     }
   });
-
-
-// async function login(data) {
-
-//   console.log("Alert! Alert! Someone is logging in!") //Display message to ensure function is called
-//   //Verify username is in the database
-//   let verify = await user.find({user_id : data.user_id}).next();
-//   console.log(verify)
-//   if (verify){
-//     //verify password is correct
-//     const correctPassword = await bcrypt.compare(data.password,verify.password);
-//     if (correctPassword){
-//       token = generateToken(verify)
-//       return{verify,token};
-//     }else{
-//       return ("Wrong password D: Forgotten your password?")
-//     }
-//   }else{
-//     return ("No such user ID found D:")
-// }}
-
-async function login(data) {
-
-  console.log("Alert! Alert! Someone is logging in!");
-
-  try {
-    // Verify username in the database
-    let verify = await user.findOne({ user_id: data.user_id });
-
-    if (verify) {
-      // Verify password is correct
-      const correctPassword = await bcrypt.compare(data.password, verify.password);
-
-      if (correctPassword) {
-        token = generateToken(verify);
-
-        return { success: true, verify, token };
-      } else {
-        return { success: false, error: "Wrong password D: Forgotten your password?" };
-      }
-    } else {
-      return { success: false, error: "No such user ID found D:" };
-    }
-  } catch (error) {
-    console.error("Error during login:", error);
-    return { success: false, error: "Internal server error during login" };
-  }
-}
-
-
-  //generate token for login authentication
-  function generateToken(loginProfile){
-    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
-  }
   
 //find user GET request
 app.get('/finduser', verifyToken, async (req, res)=>{
   let authorize = req.user.role //reading the token for authorisation
-  let data = req.body //requesting the data from body
+  let data = req.query.user_id //requesting the data from body
   //checking the role of user
   if (authorize == "resident"|| authorize == "security"){
     res.send(errorMessage() + "\nyou do not have access to finding users!")
@@ -175,10 +90,12 @@ app.get('/finduser', verifyToken, async (req, res)=>{
     }
   })
 
+  
+
 //register user post request
 app.post('/registeruser', verifyToken, async (req, res)=>{
   let authorize = req.user.role //reading the token for authorisation
-  let data = req.body //requesting the data from body
+  let data = req.query.user_id //requesting the data from body
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
     res.send("you do not have access to registering users!")
@@ -198,7 +115,7 @@ app.post('/registeruser', verifyToken, async (req, res)=>{
 //update user PATCH request
 app.patch('/updateuser', verifyToken, async (req, res)=>{
   let authorize = req.user.role //reading the token for authorisation
-  let data = req.body //requesting the data from body
+  let data = req.query.user_id //requesting the data from body
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
     res.send("you do not have access to update user information!")
@@ -217,7 +134,7 @@ app.patch('/updateuser', verifyToken, async (req, res)=>{
 
 //delete user DELETE request
 app.delete('/deleteuser', verifyToken, async (req, res)=>{
-  let data = req.body
+  let data = req.query.user_id
   let authorize = req.user.role
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
@@ -267,16 +184,48 @@ app.get('/findvisitor', verifyToken, async (req, res)=>{
     res.send(errorMessage() + "Not a valid token!") 
   }
   })
+async function login(data) {
 
+  console.log("Alert! Alert! Someone is logging in!");
+
+  try {
+    // Verify username in the database
+    let verify = await user.findOne({ user_id: data.user_id });
+
+    if (verify) {
+      // Verify password is correct
+      const correctPassword = await bcrypt.compare(data.password, verify.password);
+
+      if (correctPassword) {
+        token = generateToken(verify);
+
+        return { success: true, verify, token };
+      } else {
+        return { success: false, error: "Wrong password D: Forgotten your password?" };
+      }
+    } else {
+      return { success: false, error: "No such user ID found D:" };
+    }
+  } catch (error) {
+    console.error("Error during login:", error);
+    return { success: false, error: "Internal server error during login" };
+  }
+}
+
+
+  //generate token for login authentication
+  function generateToken(loginProfile){
+    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
+  }
 async function findUser(newdata) {
   //verify if there is duplicate username in databse
-  const match = await user.find({user_id : newdata.user_id},{projection: {password: 0, _id : 0}}).next()
+  const match = await user.findOne({user_id : newdata},{projection: {password: 0, _id : 0}})
   return (match)
 }
 
 async function registerUser(newdata) {
   //verify if there is duplicate username in databse
-  const match = await user.find({user_id : newdata.user_id}).next()
+  const match = await user.findOne({user_id : newdata})
     if (match) {
       return 
     } else {
@@ -297,7 +246,7 @@ async function registerUser(newdata) {
     
 async function updateUser(data) {
 
-  result = await user.findOneAndUpdate({user_id : data.user_id},{$set : data}, {new: true})
+  result = await user.findOneAndUpdate({user_id : data},{$set : data}, {new: true})
   if(result.value == null){
     return 
   }else{
