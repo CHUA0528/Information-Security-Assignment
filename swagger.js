@@ -250,9 +250,9 @@ const document={
       "parameters": [
 
         {
-          "name": "criteria",
+          "name": "ref_num",
           "in": "query",
-          "description": "Criteria to search for visitors",
+          "description": "reference for users",
           "required": true,
           "type": "string"
         }
