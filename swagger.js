@@ -295,7 +295,6 @@ const document={
       "category": {"type": "string"},
       "visit_date": {"type": "string"},
       "unit": {"type": "string"},
-      "user_id": {"type": "string"}
     }
   }
 }
