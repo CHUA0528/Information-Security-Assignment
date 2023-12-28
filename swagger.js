@@ -119,10 +119,11 @@ const document={
           "type": "string"
         }
       ],
-      "security":
-      {
-      "Bearer": []
-      },
+      "security": [
+        {
+          "Bearer": []
+        }
+      ],
       "responses": {
         "200": {"description": "Successful response"},
         "401": {"description": "Unauthorized"},
@@ -145,10 +146,11 @@ const document={
           "schema": {"$ref": "#/definitions/User"}
         }
       ],
-      "security":
-      {
-      "Bearer": []
-      },
+      "security": [
+        {
+          "Bearer": []
+        }
+      ],
       "responses": {
         "201": {"description": "User registered successfully"},
         "401": {"description": "Unauthorized"},
@@ -172,10 +174,11 @@ const document={
           "schema": {"$ref": "#/definitions/User"}
         }
       ],
-      "security":
-      {
-      "Bearer": []
-      },
+      "security": [
+        {
+          "Bearer": []
+        }
+      ],
       "responses": {
         "200": {"description": "User updated successfully"},
         "401": {"description": "Unauthorized"},
@@ -198,10 +201,11 @@ const document={
           "type": "string"
         }
       ],
-      "security":
-      {
-      "Bearer": []
-      },
+      "security": [
+        {
+          "Bearer": []
+        }
+      ],
       "responses": {
         "200": {"description": "User deleted successfully"},
         "401": {"description": "Unauthorized"},
@@ -225,10 +229,11 @@ const document={
           "schema": {"$ref": "#/definitions/Visitor"}
         }
       ],
-      "security":
-      {
-      "Bearer": []
-      },
+      "security": [
+        {
+          "Bearer": []
+        }
+      ],
       "responses": {
         "201": {"description": "Visitor registered successfully"},
         "401": {"description": "Unauthorized"},
@@ -252,10 +257,11 @@ const document={
           "type": "string"
         }
       ],
-      "security":
-      {
-      "Bearer": []
-      },
+      "security": [
+        {
+          "Bearer": []
+        }
+      ],
       "responses": {
         "200": {"description": "Successful response"},
         "401": {"description": "Unauthorized"},
