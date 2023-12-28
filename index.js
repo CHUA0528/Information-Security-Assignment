@@ -115,7 +115,8 @@ app.post('/registeruser', verifyToken, async (req, res)=>{
 //update user PATCH request
 app.patch('/updateuser', verifyToken, async (req, res)=>{
   let authorize = req.user.role //reading the token for authorisation
-  let data = req.query.user_id //requesting the data from body
+  //console.log(authorize)
+  let data = req.body //requesting the data from body
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
     res.send("you do not have access to update user information!")
@@ -123,7 +124,9 @@ app.patch('/updateuser', verifyToken, async (req, res)=>{
     const result = await updateUser(data)
     if (result){ // checking if the user exist and updated
       console.log(result)
-      res.send("User updated! " + result.value.name)
+      
+
+      res.send("User updated! " + result.name)
     }else{
       res.send(errorMessage() + "User does not exist!")
     }
@@ -134,7 +137,8 @@ app.patch('/updateuser', verifyToken, async (req, res)=>{
 
 //delete user DELETE request
 app.delete('/deleteuser', verifyToken, async (req, res)=>{
-  let data = req.query.user_id
+  let data = req.query.user_id //requesting the data from body  
+  console.log(data)
   let authorize = req.user.role
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
@@ -143,7 +147,7 @@ app.delete('/deleteuser', verifyToken, async (req, res)=>{
     const lmao = await deleteUser(data)
     //checking if item is deleted
     if (lmao.deletedCount == "1"){
-      res.send("user deleted " + data.user_id)
+      res.send("user deleted " + data)
     }else{
       res.send(errorMessage() + "Cannot find the user to delete!")
     }
@@ -158,6 +162,8 @@ app.post('/registervisitor', verifyToken, async (req, res)=>{
   let authorize = req.user.role
   let loginUser = req.user.user_id
   let data = req.body
+  console.log(data)
+  console.log(authorize)
   //checking if token is valid
   if(authorize){
   const lmao = await registerVisitor(data, loginUser)
@@ -175,15 +181,19 @@ app.post('/registervisitor', verifyToken, async (req, res)=>{
 //find visitor GET request
 app.get('/findvisitor', verifyToken, async (req, res)=>{
   let authorize = req.user//reading t he token for authorisation
-  let data = req.body //requesting the data from body
+  let data = req.query.ref_num //requesting the data from body
+  //console.log(data)
   //checking the role of user
-  if (authorize.role){
+  //console.log(authorize)
+  if (authorize.role == "resident" || authorize.role == "security" || authorize.role == "admin"){
     const result = await findVisitor(data,authorize)
     res.send(result)
   }else{
     res.send(errorMessage() + "Not a valid token!") 
   }
   })
+
+
 async function login(data) {
 
   console.log("Alert! Alert! Someone is logging in!");
@@ -244,58 +254,71 @@ async function registerUser(newdata) {
   return (newUser)
 }}
     
-async function updateUser(data) {
+  async function updateUser(data) {
+    console.log(data)
+    console.log(data.user_id)
+    data.password=await encryption(data.password)
 
-  result = await user.findOneAndUpdate({user_id : data},{$set : data}, {new: true})
-  if(result.value == null){
-    return 
-  }else{
-    return (result)
-  }
-}
 
-async function deleteUser(data) {
-  //verify if username is already in databse
-  success = await user.deleteOne({user_id : data.user_id})
-  return (success) // return success message
-}
-
-async function registerVisitor(newdata, currentUser) {
-  //verify if there is duplciate ref_num
-  const match = await visitor.find({"ref_num": newdata.ref}).next()
-    if (match) {
+    const result = await user.findOneAndUpdate({"user_id" : data.user_id},{$set : data}, {new: true})
+    console.log(result)
+    if(result == null){
       return 
-    } else {
-      // add info into database
-      await visitor.insertOne({
-        "ref_num" : newdata.ref,
-        "name": newdata.name,
-        "IC_num": newdata.IC_num,
-        "car_num": newdata.car_num,
-        "hp" : newdata.hp_num,
-        "pass": newdata.pass,
-        "category" : newdata.category,
-        "visit_date" : newdata.date,
-        "unit" : newdata.unit,
-        "user_id" : currentUser
-      })
-          return (newdata)
-    }  
-}
+    }else{
+      //const hash = await encryption(result.password)
+      
+      return (result)
+    }
+  }
 
-async function findVisitor(newdata, currentUser){
-  if (currentUser.role == "resident"){
-    filter=Object.assign(newdata, {"user_id" : currentUser.user_id})
-    match = await visitor.find(filter, {projection: {_id :0}}).toArray()
-  }else if (currentUser.role == "security" || currentUser.role == "admin"){
-    match = await visitor.find(newdata).toArray()
+  async function deleteUser(data) {
+    //verify if username is already in databse
+    success = await user.deleteOne({user_id : data})
+    return (success) // return success message
   }
-  if (match.length != 0){
-    return (match)
-  } else{
-    return (errorMessage() + "Visitor does not exist!")
+  //generate token for login authentication
+  function generateToken(loginProfile){
+    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
   }
-}
+
+  async function registerVisitor(newdata, currentUser) {
+    //verify if there is duplciate ref_num
+    const match = await visitor.find({"ref_num": newdata.ref_num}).next()
+      if (match) {
+        return 
+      } else {
+        // add info into database
+        await visitor.insertOne({
+          "ref_num" : newdata.ref_num,
+          "name": newdata.name,
+          "IC_num": newdata.IC_num,
+          "car_num": newdata.car_num,
+          "hp" : newdata.hp_num,
+          "pass": newdata.pass,
+          "category" : newdata.category,
+          "visit_date" : newdata.visit_date,
+          "unit" : newdata.unit,
+          "user_id" : currentUser
+        })
+            return (newdata)
+      }  
+  }
+  
+  async function findVisitor(newdata, currentUser){
+    if (currentUser.role == "resident"){
+      filter=Object.assign({},{"ref_num": newdata}, {"user_id" : currentUser.user_id})
+      
+      console.log(filter)
+      match = await visitor.find(filter, {projection: {_id :0}}).toArray()
+    }else if (currentUser.role == "security" || currentUser.role == "admin"){
+      match = await visitor.find({"ref_num":newdata},{projection: {_id :0}}).toArray()
+    }
+    if (match.length != 0){
+      return (match)
+    } else{
+      return (errorMessage() + "Visitor does not exist!")
+    }
+  }
 
 //verify generated tokens
 function verifyToken(req, res, next){
