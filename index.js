@@ -4,12 +4,14 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger');
 //const swaggerjsdoc = require('swagger-jsdoc');
 
+
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 const app = express();
 const port = process.env.PORT || 6000;
 const{ MongoClient, ServerApiVersion } = require('mongodb');
+const e = require('express');
 const uri = 'mongodb+srv://CHUA0528:CCF12345@chua.ch7khae.mongodb.net/';
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -21,11 +23,9 @@ const client = new MongoClient(uri, {
     }
   });
 
-  client.connect();
-
-
+client.connect();
 //variables to define which collection used
-//const admin = client.db("Visitor_Management_v1").collection("admin")
+const approvalList = client.db("Visitor_Management_v1").collection("residentapprovalList")
 const user = client.db("Visitor_Management_v1").collection("users")
 const visitor = client.db("Visitor_Management_v1").collection("visitor")
 
@@ -35,45 +35,69 @@ app.use(express.json());
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
-
-
-
-
 // Swagger
-
  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
+ 
  
 //login GET request
 app.post ('/login', async (req, res) => {
 
 
     let data = req.body
+    //console.log(data)
     let result = await login(data);
-    //res.setHeader('Content-Type', 'application/pdf');
-    //res.setHeader('Content-Disposition', 'attachment; filename=quote.pdf');
-   // res.status(200).send(pdfData); // Assuming pdfData is a Buffer or binary data
-
-    
 
     const loginUser = result.verify
+    //console.log(loginUser)
     const token = result.token
+    const hosts =await user.find({"role":"resident"},{projection: {_id :0}}).toArray()
+    console.log(hosts)
     
     //check the returned result if its a object, only then can we welcome the user
     if (typeof loginUser == "object") { 
-      res.write(loginUser.user_id + " has logged in!")
-      res.write("\nWelcome "+ loginUser.name + "!")
+
+      
+      if (loginUser.role == "admin"){
+        res.setHeader('Content-Type', 'application/json');
+        res.json({
+          username: loginUser.name,
+          userid: loginUser.user_id,
+          token: token,
+          hosts: hosts
+        });
+      
+      
+       
+      // res.write(loginUser.user_id + " has logged in!")
+      // res.write("\nWelcome "+ loginUser.name + "!")
+
+      //res.write("\nAll the residents(hosts) are listed below : \n"+JSON.stringify(hosts))
+
       res.end("\nYour token : " + token)
+      res.send(hosts)
+   
+
+      }else{
+      res.send(loginUser.user_id + " has logged in!\nWelcome "+ loginUser.name + "!\nYour token : "+ token)
+      }
     }else {
       //else send the failure message
       res.send(errorMessage() + result)
     }
+    
   });
-  
+
+
+
 //find user GET request
 app.get('/finduser', verifyToken, async (req, res)=>{
+  console.log(req.user)
   let authorize = req.user.role //reading the token for authorisation
-  let data = req.query.user_id //requesting the data from body
+  console.log(authorize)
+  //console.log('req.params:', req.params);
+  const data = req.query.user_id; // Accessing the parameter from the query string
+  console.log(data);
+
   //checking the role of user
   if (authorize == "resident"|| authorize == "security"){
     res.send(errorMessage() + "\nyou do not have access to finding users!")
@@ -81,6 +105,8 @@ app.get('/finduser', verifyToken, async (req, res)=>{
     const newUser = await findUser(data) //calling the function to find user
     if (newUser){ //checking if user exist
       res.send(newUser)
+
+
     }else{
       res.send(errorMessage() + "User does not exist sadly :[")
     }
@@ -90,12 +116,10 @@ app.get('/finduser', verifyToken, async (req, res)=>{
     }
   })
 
-  
-
-//register user post request
+  //register user post request
 app.post('/registeruser', verifyToken, async (req, res)=>{
   let authorize = req.user.role //reading the token for authorisation
-  let data = req.query.user_id //requesting the data from body
+  let data = req.body //requesting the data from body
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
     res.send("you do not have access to registering users!")
@@ -157,50 +181,151 @@ app.delete('/deleteuser', verifyToken, async (req, res)=>{
   }
 )
 
+  //register resident post request
+  app.post('/registerresident', verifyToken, async (req, res)=>{
+    let authorize = req.user.role //reading the token for authorisation
+    let data = req.body //requesting the data from body
+    //checking the role of user
+    if (authorize == "resident"){
+      res.send("you do not have access to registering resident!")
+    }else if (authorize == "security" || authorize == "admin" ){
+      const resident = await registerResident(data)
+      if (resident){ //checking is registration is succesful
+        res.send("Registration request processed, new Resident is " + resident.name)
+      }else{
+        res.send(errorMessage() + "User already exists!")
+      }
+    //token does not exist
+    }else {
+        res.send(errorMessage() + "Token not valid!")
+      }
+    })
+
+  app.post('/public_register_resident',async (req,res)=>{
+    let data=req.body
+    console.log(data)
+    const resident=await publicregisterResident(data)
+    if (resident){ //checking is registration is succesful
+      res.send(resident.name+" Your registration is pending approval! Please wait for the security to approve your registration!")
+    }else{
+      res.send(errorMessage() + "User already exists in waitinglist or in system!")
+    }
+  })
+
+  app.post('/public_register_resident_Testing',async (req,res)=>{
+
+    let data=req.body
+    console.log(data)
+
+    const resident=await publicregisterResident_Testing(data)
+    console.log(resident)
+
+    if (resident){ //checking is registration is succesful
+
+      res.setHeader('Content-Type', 'text/plain');
+      res.status(200).send(resident.name+" Your registration is successful!")
+    }else{
+      
+      res.setHeader('Content-Type', 'text/plain');
+      const text = errorMessage();
+      res.status(409).send(text+ "User already exists!")
+    }
+  })
+
 //register visitor POST request
-app.post('/registervisitor', verifyToken, async (req, res)=>{
+app.post('/issuevisitor_pass', verifyToken, async (req, res)=>{
   let authorize = req.user.role
   let loginUser = req.user.user_id
   let data = req.body
   console.log(data)
   console.log(authorize)
   //checking if token is valid
-  if(authorize){
-  const lmao = await registerVisitor(data, loginUser)
+  if(authorize=="resident"){
+  const lmao = await issueVisitor_pass(data, loginUser)
     if (lmao){
-      res.send("Registration request processed, visitor is " + lmao.name)
+      res.send("Pass issuing request processed, visitor is " + lmao.name)
     }else{
-      res.send(errorMessage() + "Visitor already exists! Add a visit log instead!")
+      res.send(errorMessage() + "Visitor pass already exists!")
     }
   }else {
-      res.send(errorMessage() + "Not a valid token!")
+      res.send(errorMessage() + "Not a valid token!You are not a resident!") 
     }
   }
 )
 
-//find visitor GET request
-app.get('/findvisitor', verifyToken, async (req, res)=>{
+//retrievevisitor visitor GET request
+app.get('/retrievevisitor_pass', async (req, res)=>{
+
+  let data = req.query.IC_num //requesting the data from body
+  let ref_num = req.query.ref_num
+  console.log(data,ref_num)
+  const result = await retrieveVisitor_pass(data,ref_num)
+  res.send(result)
+  })
+
+//security visitor pass verification GET request
+app.get('/securityvisitor_passverify', verifyToken, async(req, res)=>{
+  let authorize =req.user.role
+  let data = req.query.unit
+  if (authorize =="security"){
+    const result = await securityVisitor_passverify(data)
+    console.log(typeof(result))
+    
+    if(typeof(result)=="object"){
+    res.send(result)
+    }else{
+      res.send(errorMessage() + "Visitor pass does not exist!")
+    }
+  }
+  else{
+    res.send(errorMessage() + "Not a valid token!You are not a security!") 
+  }
+
+
+})
+
+//list visitor GET request
+app.get('/visitorlist', verifyToken, async (req, res)=>{
   let authorize = req.user//reading t he token for authorisation
-  let data = req.query.ref_num //requesting the data from body
+  //let data = req.query.ref_num //requesting the data from body
   //console.log(data)
   //checking the role of user
   //console.log(authorize)
   if (authorize.role == "resident" || authorize.role == "security" || authorize.role == "admin"){
-    const result = await findVisitor(data,authorize)
+    const result = await listVisitor(authorize)
+    console.log(result)
     res.send(result)
   }else{
     res.send(errorMessage() + "Not a valid token!") 
   }
   })
 
+app.get('/approvelist', verifyToken, async (req, res)=>{
+  let authorize = req.user.role
+
+  if (authorize =="admin"||authorize=="security"){
+    const result = await approveList()
+    console.log(result)
+    res.setHeader('Content-Type', 'application/json');
+    res.status(200).send(result)
+  }else{
+    res.setHeader('Content-Type', 'text/plain');
+    const text = errorMessage();
+    //console.log(typeof(text))
+    res.status(401).send(text+"Not a valid token!You are not a admin or security!")
+  }
+  })
+
 
 async function login(data) {
+
 
   console.log("Alert! Alert! Someone is logging in!");
 
   try {
     // Verify username in the database
-    let verify = await user.findOne({ user_id: data.user_id });
+    console.log(data.user_id);
+    let verify = await user.findOne({user_id: data.user_id});
 
     if (verify) {
       // Verify password is correct
@@ -223,37 +348,38 @@ async function login(data) {
 }
 
 
-  //generate token for login authentication
-  function generateToken(loginProfile){
-    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
-  }
 async function findUser(newdata) {
-  //verify if there is duplicate username in databse
-  const match = await user.findOne({user_id : newdata},{projection: {password: 0, _id : 0}})
-  return (match)
+    //verify if there is duplicate username in databse
+    console.log(newdata)
+    const match = await user.findOne({user_id : newdata},{projection: {password: 0, _id : 0}})
+    console.log(match)
+    return (match)
 }
 
-async function registerUser(newdata) {
-  //verify if there is duplicate username in databse
-  const match = await user.findOne({user_id : newdata})
-    if (match) {
-      return 
-    } else {
-      //encrypt password by hashing
-      const hashed = await encryption(newdata.password)
-      // add info into database
-      await user.insertOne({
-        "user_id": newdata.user_id,
-        "password": hashed,
-        "name": newdata.name,
-        "unit": newdata.unit,
-        "hp_num" : newdata.hp_num,
-        "role" : newdata.role
-      })
-  const newUser=await user.find({user_id : newdata.user_id}).next()
-  return (newUser)
-}}
-    
+  async function registerUser(newdata) {
+    //verify if there is duplicate username in databse
+    console.log(newdata)
+    const match = await user.find({user_id : newdata.user_id}).next()
+      if (match) {
+        return 
+      } else {
+        //encrypt password by hashing
+        const hashed = await encryption(newdata.password)
+        // add info into database
+        await user.insertOne({
+          "user_id": newdata.user_id,
+          "password": hashed,
+          "name": newdata.name,
+          "unit": newdata.unit,
+          "hp_num" : newdata.hp_num,
+          "role" : newdata.role
+        })
+    const newUser=await user.find({user_id : newdata.user_id}).next()
+    return (newUser)
+  }}
+
+
+      
   async function updateUser(data) {
     console.log(data)
     console.log(data.user_id)
@@ -270,18 +396,102 @@ async function registerUser(newdata) {
       return (result)
     }
   }
-
+  
   async function deleteUser(data) {
     //verify if username is already in databse
     success = await user.deleteOne({user_id : data})
     return (success) // return success message
   }
-  //generate token for login authentication
-  function generateToken(loginProfile){
-    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
-  }
 
-  async function registerVisitor(newdata, currentUser) {
+
+  async function registerResident(newdata) {
+    //verify if there is duplicate username in databse
+    console.log(newdata)
+    const match = await user.find({user_id : newdata.user_id}).next()
+      if (match) {
+        return 
+      } else {
+        const match2 = await approvalList.find({user_id : newdata.user_id}).next()
+        if(match2){
+        await approvalList.deleteOne({user_id : newdata.user_id})
+
+        //encrypt password by hashing
+        const hashed = await encryption(newdata.password)
+        // add info into database
+        await user.insertOne({
+          "user_id": newdata.user_id,
+          "password": hashed,
+          "name": newdata.name,
+          "unit": newdata.unit,
+          "hp_num" : newdata.hp_num,
+          "role" : "resident"
+        })
+        const newUser=await user.find({user_id : newdata.user_id}).next()
+        return (newUser)          
+        }else{
+        //encrypt password by hashing
+        const hashed = await encryption(newdata.password)
+        // add info into database
+        await user.insertOne({
+          "user_id": newdata.user_id,
+          "password": hashed,
+          "name": newdata.name,
+          "unit": newdata.unit,
+          "hp_num" : newdata.hp_num,
+          "role" : "resident"
+        })
+        const newUser=await user.find({user_id : newdata.user_id}).next()
+        return (newUser)
+  
+
+        }
+      }
+    }
+  
+  async function publicregisterResident(newdata){
+    const match = await approvalList.find({user_id : newdata.user_id}).next()
+    if (match){
+      return
+    }else
+    {
+      const match2 = await user.find({user_id : newdata.user_id}).next()
+      if (match2){
+        return
+      }else{
+      await approvalList.insertOne({
+        "user_id": newdata.user_id,
+        "password": newdata.password,
+        "name": newdata.name,
+        "unit": newdata.unit,
+        "hp_num" : newdata.hp_num
+      })
+      const newUser=await approvalList.find({user_id : newdata.user_id}).next()
+      return (newUser)
+      }
+  }
+}
+
+async function publicregisterResident_Testing(newdata){
+
+  
+    const match = await user.find({user_id : newdata.user_id}).next()
+    if (match){
+      return
+  }else{
+    await user.insertOne({
+      "user_id": newdata.user_id,
+      "password": newdata.password,
+      "name": newdata.name,
+      "unit": newdata.unit,
+      "hp_num" : newdata.hp_num,
+      "role" : "resident"
+    })
+    const newUser=await user.find({user_id : newdata.user_id}).next()
+    return (newUser)
+  }
+}
+
+  async function issueVisitor_pass(newdata, currentUser) {
     //verify if there is duplciate ref_num
     const match = await visitor.find({"ref_num": newdata.ref_num}).next()
       if (match) {
@@ -294,8 +504,6 @@ async function registerUser(newdata) {
           "IC_num": newdata.IC_num,
           "car_num": newdata.car_num,
           "hp" : newdata.hp_num,
-          "pass": newdata.pass,
-          "category" : newdata.category,
           "visit_date" : newdata.visit_date,
           "unit" : newdata.unit,
           "user_id" : currentUser
@@ -304,15 +512,19 @@ async function registerUser(newdata) {
       }  
   }
   
-  async function findVisitor(newdata, currentUser){
-    if (currentUser.role == "resident"){
-      filter=Object.assign({},{"ref_num": newdata}, {"user_id" : currentUser.user_id})
+  async function retrieveVisitor_pass(newdata,ref_num){
+    console.log(newdata)
+    const match = await visitor.findOne({"IC_num":newdata,"ref_num":ref_num},{projection:{unit:1,_id:0}})
+    console.log(match)
+
+    // if (currentUser.role == "resident"){
+    //   filter=Object.assign({},{"ref_num": newdata}, {"user_id" : currentUser.user_id})
       
-      console.log(filter)
-      match = await visitor.find(filter, {projection: {_id :0}}).toArray()
-    }else if (currentUser.role == "security" || currentUser.role == "admin"){
-      match = await visitor.find({"ref_num":newdata},{projection: {_id :0}}).toArray()
-    }
+    //   console.log(filter)
+    //   match = await visitor.find(filter, {projection: {_id :0}}).toArray()
+    // }else if (currentUser.role == "security" || currentUser.role == "admin"){
+    //   match = await visitor.find({"ref_num":newdata},{projection: {_id :0}}).toArray()
+    // }
     if (match.length != 0){
       return (match)
     } else{
@@ -320,27 +532,71 @@ async function registerUser(newdata) {
     }
   }
 
-//verify generated tokens
-function verifyToken(req, res, next){
-  let header = req.headers.authorization
-  let token = header.split(' ')[1] //checking header
-  jwt.verify(token,'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword',function(err,decoded){
-    if(err) {
-      res.send(errorMessage() + "Token is not valid D:, go to the counter to exchange")
-      //return
+  async function securityVisitor_passverify(address){ 
+    console.log(address)
+    const match = await user.find({"unit":address},{projection:{"hp_num":1,"name":1,"_id":0}}).next()
+    return (match)
+
+
+  }
+
+  async function listVisitor(currentUser){
+    if (currentUser.role == "resident"){
+      filter=Object.assign({}, {"user_id" : currentUser.user_id})
+      
+      //console.log(filter)
+      match = await visitor.find(filter, {projection: {_id :0}}).toArray()
+    }else if (currentUser.role == "security" || currentUser.role == "admin"){
+      match = await visitor.find({},{projection: {_id :0}}).toArray()
     }
-    req.user = decoded // bar
+    if (match.length != 0){
+      return (match)
+    } else{
+      return (errorMessage() + "Visitor does not exist!")
+    }
+  }
+  async function approveList(){
+    const match = await approvalList.find({},{projection:{"_id":0}}).toArray()
+    return (match)
+  }
 
-    next()
-  });
-}
 
-//bcrypt functions to generate a hashed password
-async function encryption(data){
-  const salt= await bcrypt.genSalt(saltRounds)
-  const hashh = await bcrypt.hash(data,salt)
-  return hashh
-}
+  //generate token for login authentication
+  function generateToken(loginProfile){
+    
+    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
+  }
+
+  
+  //verify generated tokens
+  function verifyToken(req, res, next){
+    let header = req.headers.authorization
+    let token = header.split(' ')[1] //checking header
+    jwt.verify(token,'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword',function(err,decoded){
+      if(err) {
+        res.send(errorMessage() + "Token is not valid D:, go to the counter to exchange")
+        //return
+      }
+      req.user = decoded // bar
+  
+      next()
+    });
+  }
+
+
+  
+  //bcrypt functions to generate a hashed password
+  async function encryption(data){
+    const salt= await bcrypt.genSalt(saltRounds)
+    const hashh = await bcrypt.hash(data,salt)
+    return hashh
+  }
+  
+  // to get the current time 
+  function currentTime(){
+  const today = new Date().toLocaleString("en-US", {timeZone: "singapore"})
+  return today
+  }
 
   function errorMessage(){
     const x = Math.floor(Math.random()*6)
