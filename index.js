@@ -232,13 +232,13 @@ app.delete('/deleteuser', verifyToken, async (req, res)=>{
     }
   })
 
-//register visitor POST request
+//issue visitor pass POST request
 app.post('/issuevisitor_pass', verifyToken, async (req, res)=>{
   let authorize = req.user.role
   let loginUser = req.user.user_id
   let data = req.body
-  console.log(data)
-  console.log(authorize)
+  //console.log(data)
+  //console.log(authorize)
   //checking if token is valid
   if(authorize=="resident"){
   const lmao = await issueVisitor_pass(data, loginUser)
@@ -253,12 +253,30 @@ app.post('/issuevisitor_pass', verifyToken, async (req, res)=>{
   }
 )
 
+//issue visitor pass POST request
+app.post('/issuevisitor_pass_Testing', async (req, res)=>{
+  let data = req.body
+  //console.log(data)
+  //checking if token is valid
+
+  const lmao = await issueVisitor_pass(data, "Testing")
+
+    if (lmao){
+      res.send("Pass issuing request processed, visitor is " + lmao.name)
+    }else{
+      res.send(errorMessage() + "Visitor pass already exists!")
+    }
+
+
+  }
+)
+
 //retrievevisitor visitor GET request
 app.get('/retrievevisitor_pass', async (req, res)=>{
 
   let data = req.query.IC_num //requesting the data from body
   let ref_num = req.query.ref_num
-  console.log(data,ref_num)
+  //console.log(data,ref_num)
   const result = await retrieveVisitor_pass(data,ref_num)
   res.send(result)
   })
@@ -298,6 +316,15 @@ app.get('/visitorlist', verifyToken, async (req, res)=>{
   }else{
     res.send(errorMessage() + "Not a valid token!") 
   }
+  })
+
+  //list visitor GET request
+app.get('/visitorlist_Testing', async (req, res)=>{
+
+
+    const result = await listVisitor_TESTING()
+    console.log(result)
+    res.send(result)
   })
 
 app.get('/approvelist', verifyToken, async (req, res)=>{
@@ -469,9 +496,9 @@ async function findUser(newdata) {
       return (newUser)
       }
   }
-}
+  }
 
-async function publicregisterResident_Testing(newdata){
+  async function publicregisterResident_Testing(newdata){
 
   
     const match = await user.find({user_id : newdata.user_id}).next()
@@ -489,7 +516,7 @@ async function publicregisterResident_Testing(newdata){
     const newUser=await user.find({user_id : newdata.user_id}).next()
     return (newUser)
   }
-}
+  }
 
   async function issueVisitor_pass(newdata, currentUser) {
     //verify if there is duplciate ref_num
@@ -514,7 +541,7 @@ async function publicregisterResident_Testing(newdata){
   
   async function retrieveVisitor_pass(newdata,ref_num){
     console.log(newdata)
-    const match = await visitor.findOne({"IC_num":newdata,"ref_num":ref_num},{projection:{unit:1,_id:0}})
+    const match = await visitor.findOne({"IC_num":newdata,"ref_num":ref_num},{projection:{unit:1,visit_date:1,_id:0}})
     console.log(match)
 
     // if (currentUser.role == "resident"){
@@ -555,6 +582,17 @@ async function publicregisterResident_Testing(newdata){
       return (errorMessage() + "Visitor does not exist!")
     }
   }
+
+  async function listVisitor_TESTING(){
+
+      match = await visitor.find({},{projection: {_id :0}}).toArray()
+      console.log(match)
+      return (match)
+  
+
+  }
+
+
   async function approveList(){
     const match = await approvalList.find({},{projection:{"_id":0}}).toArray()
     return (match)

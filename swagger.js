@@ -37,12 +37,12 @@ const document={
                 "user_id": {
                   "type": "string",
                   "description": "User ID",
-                  "example": "A3100"
+                  "example": "String"
                 },
                 "password": {
                   "type": "string",
                   "description": "User password",
-                  "example": "lyla"
+                  "example": "String"
                 }
               }
             
@@ -282,7 +282,7 @@ const document={
     
   }
 }
-},
+  },
 
   "/issuevisitor_pass": {
     "post": {
@@ -303,6 +303,30 @@ const document={
           "Bearer": []
         }
       ],
+      "responses": {
+        "201": {"description": "Visitor pass issued successfully"},
+        "401": {"description": "Unauthorized"},
+        "403": {"description": "Forbidden"},
+        "409": {"description": "Visitor pass already exists"}
+      }
+    }
+  },
+
+  "/issuevisitor_pass_Testing": {
+    "post": {
+      "summary": "Issue visitor pass (without authentication/login)",
+      "description": "Issue visitor pass ",
+      "tags": ["Visitor Management"],
+      "parameters": [
+        {
+          "name": "Visitor",
+          "in": "body",
+          "description": "Visitor details for pass issuing",
+          "required": true,
+          "schema": {"$ref": "#/definitions/Visitor"}
+        }
+      ],
+
       "responses": {
         "201": {"description": "Visitor pass issued successfully"},
         "401": {"description": "Unauthorized"},
@@ -374,6 +398,33 @@ const document={
      }
    }
  },
+
+ "/visitorlist_Testing": {
+  "get": {
+    "summary": "List all visitors createrd (without authentication/login)",
+    "description": "List all visitors created by a resident",
+    "tags": ["Visitor Management"],
+    "responses": {
+      "200": {
+        "description": "Successful response",
+        "type": "array",
+
+        schema: {
+          type: "object",
+
+          items: {
+            $ref: "#/definitions/Visitor"
+          }
+        }
+        }, 
+
+      "401": {"description": "Unauthorized"},
+      "403": {"description": "Forbidden"},
+      "404": {"description": "No visitors found"}
+    
+   }
+ }
+},
 
  "/securityvisitor_passverify":
  {
@@ -460,15 +511,18 @@ const document={
     "Visitor": {
       "type": "object",
       "properties": {
-        "ref_num": {"type": "string"},
-        "name": {"type": "string"},
-        "IC_num": {"type": "string"},
-        "car_num": {"type": "string"},
-        "hp_num": {"type": "string"},
-        "visit_date": {"type": "string"},
-        "unit": {"type": "string"},
-        "user_id": {"type": "string"}
+
+
+          "ref_num": {"type": "string"},
+          "name": {"type": "string"},
+          "IC_num": {"type": "string"},
+          "car_num": {"type": "string"},
+          "hp_num": {"type": "string"},
+          "visit_date": {"type": "string"},
+          "unit": {"type": "string"},
+
       }
+
     },
     "Resident": {
       "type": "object",
