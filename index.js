@@ -166,7 +166,7 @@ app.delete('/deleteuser', verifyToken, async (req, res)=>{
   let authorize = req.user.role
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
-    res.send("you do not have access to registering users!")
+    res.send("you do not have access to delete user!")
   }else if (authorize == "admin" ){
     const lmao = await deleteUser(data)
     //checking if item is deleted
@@ -280,6 +280,47 @@ app.get('/retrievevisitor_pass', async (req, res)=>{
   const result = await retrieveVisitor_pass(data,ref_num)
   res.send(result)
   })
+
+//delete user DELETE request
+app.delete('/deletevisitor_pass', verifyToken, async (req, res)=>{
+  let data = req.query.visitor_reference_number //requesting the data from body  
+  console.log(data)
+  let authorize = req.user
+  console.log(authorize)
+  //checking the role of user
+  if (authorize == "security" || authorize == "admin"){
+    res.send("you do not have access to delete visitor_pass!")
+  }
+  else if (authorize.role == "resident" ){
+    const lmao = await deletevisitor_pass(data,authorize.user_id)
+    //checking if item is deleted
+    if (lmao.deletedCount == "1"){
+      res.send("user deleted " + data)
+    }else{
+      res.send(errorMessage() + "Cannot find the visitor_pass to delete!")
+    }
+  }
+  else 
+  {
+      res.send(errorMessage() + "Token not valid!")
+    }
+  }
+)
+
+//delete user DELETE request
+app.delete('/deletevisitor_pass_Testing', async (req, res)=>{
+  let data = req.query.visitor_reference_number //requesting the data from body  
+  //console.log(data)
+    const lmao = await deletevisitor_pass_Testing(data)
+    //checking if item is deleted
+    if (lmao.deletedCount == "1"){
+      res.send(data + "is deleted")
+    }else{
+      res.send(errorMessage() + "Cannot find the visitor_pass to delete!")
+    }
+
+  }
+)
 
 //security visitor pass verification GET request
 app.get('/securityvisitor_passverify', verifyToken, async(req, res)=>{
@@ -557,6 +598,18 @@ async function findUser(newdata) {
     } else{
       return (errorMessage() + "Visitor does not exist!")
     }
+  }
+
+  async function deletevisitor_pass(data, currentUser) {
+    //verify if username is already in databse
+    success = await visitor.deleteOne({"ref_num" : data, "user_id" : currentUser})
+    return (success) // return success message
+  }
+
+  async function deletevisitor_pass_Testing(data) {
+    //verify if username is already in databse
+    success = await visitor.deleteOne({"ref_num" : data})
+    return (success) // return success message
   }
 
   async function securityVisitor_passverify(address){ 

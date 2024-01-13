@@ -37,12 +37,12 @@ const document={
                 "user_id": {
                   "type": "string",
                   "description": "User ID",
-                  "example": "String1234"
+                  "example": "A3100"
                 },
                 "password": {
                   "type": "string",
                   "description": "User password",
-                  "example": "Covid19"
+                  "example": "lyla"
                 }
               }
             
@@ -363,6 +363,60 @@ const document={
         "401": {"description": "Unauthorized"},
         "403": {"description": "Forbidden"},
         "404": {"description": "No visitors found"}
+      }
+    }
+  },
+  
+  "/deletevisitor_pass": {
+    "delete": {
+      "summary": "Delete visitor by visitor reference number",
+      "description": "Delete a visitor by visitor reference number",
+      "tags": ["Visitor Management"],
+      "parameters": [
+
+        {
+          "name": "visitor_reference_number",
+          "in": "query",
+          "description": "visitor reference number to delete",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "security": [
+      {
+        "Bearer": []
+      }
+      ],
+      "responses": {
+        "200": {"description": "User deleted successfully"},
+        "401": {"description": "Unauthorized"},
+        "403": {"description": "Forbidden"},
+        "404": {"description": "User not found"}
+      }
+    }
+  },
+
+  "/deletevisitor_pass_Testing": {
+    "delete": {
+      "summary": "Delete visitor by visitor reference number (without authentication/login)",
+      "description": "Delete a visitor by visitor reference number",
+      "tags": ["Visitor Management"],
+      "parameters": [
+
+        {
+          "name":"visitor_reference_number",
+          "in": "query",
+          "description": "visitor reference number to delete",
+          "required": true,
+          "type": "string"
+        }
+      ],
+
+      "responses": {
+        "200": {"description": "User deleted successfully"},
+        "401": {"description": "Unauthorized"},
+        "403": {"description": "Forbidden"},
+        "404": {"description": "User not found"}
       }
     }
   },
