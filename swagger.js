@@ -37,12 +37,12 @@ const document={
                 "user_id": {
                   "type": "string",
                   "description": "User ID",
-                  "example": "String"
+                  "example": "A3100"
                 },
                 "password": {
                   "type": "string",
                   "description": "User password",
-                  "example": "String"
+                  "example": "lyla"
                 }
               }
             
