@@ -118,18 +118,27 @@ app.get('/finduser', verifyToken, async (req, res)=>{
 
   //register user post request
 app.post('/registeruser', verifyToken, async (req, res)=>{
+
+
   let authorize = req.user.role //reading the token for authorisation
   let data = req.body //requesting the data from body
+  console.log(data)
   //checking the role of user
   if (authorize == "security" || authorize == "resident"){
     res.send("you do not have access to registering users!")
   }else if (authorize == "admin" ){
+    verifypassword=CheckPassword(data.password)
+    if(verifypassword==false){
+      res.send(errorMessage() + "Password must be 8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character")
+    } else{
     const newUser = await registerUser(data)
     if (newUser){ //checking is registration is succesful
       res.send("Registration request processed, new user is " + newUser.name)
     }else{
       res.send(errorMessage() + "User already exists!")
+
     }
+  }
   //token does not exist
   }else {
       res.send(errorMessage() + "Token not valid!")
@@ -189,13 +198,20 @@ app.delete('/deleteuser', verifyToken, async (req, res)=>{
     if (authorize == "resident"){
       res.send("you do not have access to registering resident!")
     }else if (authorize == "security" || authorize == "admin" ){
-      const resident = await registerResident(data)
-      if (resident){ //checking is registration is succesful
-        res.send("Registration request processed, new Resident is " + resident.name)
-      }else{
-        res.send(errorMessage() + "User already exists!")
+      verifypassword=CheckPassword(data.password)
+      if(verifypassword==false){
+        res.send(errorMessage() + "Password must be 8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character")
+      } else{
+      
+        const resident = await registerResident(data)
+        if (resident){ //checking is registration is succesful
+          res.send("Registration request processed, new Resident is " + resident.name)
+        }else{
+          res.send(errorMessage() + "User already exists!")
+        }
+      //token does not exist
       }
-    //token does not exist
+    
     }else {
         res.send(errorMessage() + "Token not valid!")
       }
@@ -204,21 +220,35 @@ app.delete('/deleteuser', verifyToken, async (req, res)=>{
   app.post('/public_register_resident',async (req,res)=>{
     let data=req.body
     console.log(data)
-    const resident=await publicregisterResident(data)
-    if (resident){ //checking is registration is succesful
-      res.send(resident.name+" Your registration is pending approval! Please wait for the security to approve your registration!")
-    }else{
-      res.send(errorMessage() + "User already exists in waitinglist or in system!")
+    verifypassword=CheckPassword(data.password)
+    if(verifypassword==false){
+      res.send(errorMessage() + "Password must be 8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character")
     }
+    else{
+      
+      const resident=await publicregisterResident(data)
+      if (resident){ //checking is registration is succesful
+        res.send(resident.name+" Your registration is pending approval! Please wait for the security to approve your registration!")
+      }else{
+        res.send(errorMessage() + "User already exists in waitinglist or in system!")
+      }
+
+    }
+
   })
 
   app.post('/public_register_resident_Testing',async (req,res)=>{
 
     let data=req.body
-    console.log(data)
+    verifypassword=CheckPassword(data.password)
+    if(verifypassword==false){
+      res.send(errorMessage() + "Password must be 8 to 15 characters which contain at least one lowercase letter, one uppercase letter, one numeric digit, and one special character")
+    }
+    else{
 
     const resident=await publicregisterResident_Testing(data)
     console.log(resident)
+
 
     if (resident){ //checking is registration is succesful
 
@@ -230,6 +260,7 @@ app.delete('/deleteuser', verifyToken, async (req, res)=>{
       const text = errorMessage();
       res.status(409).send(text+ "User already exists!")
     }
+  }
   })
 
 //issue visitor pass POST request
@@ -540,6 +571,7 @@ async function findUser(newdata) {
   }
 
   async function publicregisterResident_Testing(newdata){
+    
 
   
     const match = await user.find({user_id : newdata.user_id}).next()
@@ -708,3 +740,22 @@ async function findUser(newdata) {
     }
   }
 
+  function CheckPassword(inputtxt) 
+  { 
+    console.log(inputtxt)
+  //var passw=  /^[A-Za-z]\w{7,14}$/
+  var passw = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/
+  if(inputtxt.match(passw)) 
+  { 
+  console.log('Correct, try another...')
+  return true;
+  }
+  else
+  { 
+  console.log('Wrong...!')
+  return false;
+  }
+  }
+    
+  
+  
