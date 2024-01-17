@@ -578,9 +578,11 @@ async function findUser(newdata) {
     if (match){
       return
   }else{
+    //encrypt password by hashing
+    const hashed = await encryption(newdata.password)    
     await user.insertOne({
       "user_id": newdata.user_id,
-      "password": newdata.password,
+      "password": hashed,
       "name": newdata.name,
       "unit": newdata.unit,
       "hp_num" : newdata.hp_num,
