@@ -5,6 +5,16 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger');
 //const swaggerjsdoc = require('swagger-jsdoc');
 
+const { DefaultAzureCredential } = require('@azure/identity');
+const { SecretClient } = require('@azure/keyvault-secrets');
+
+const keyVaultName = 'CCFsecret';
+const keyVaultUri = `https://ccfsecret.vault.azure.net/`;
+const secretName = 'MyApiKey';
+
+const credential = new DefaultAzureCredential();
+const secretClient = new SecretClient(keyVaultUri, credential);
+
 const limiter =rateLimit({
   windowMs: 15*1000, // 15 seconds
   max:5 ,// limit each IP to 5 requests per windowMs
@@ -695,10 +705,13 @@ async function findUser(newdata) {
 
   
   //verify generated tokens
-  function verifyToken(req, res, next){
+  async function verifyToken(req, res, next){
     let header = req.headers.authorization
     let token = header.split(' ')[1] //checking header
-    jwt.verify(token,'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword',function(err,decoded){
+    secret = await getSecret()
+
+
+    jwt.verify(token,secret,function(err,decoded){
       if(err) {
         res.send(errorMessage() + "Token is not valid D:, go to the counter to exchange")
         //return
@@ -761,4 +774,7 @@ async function findUser(newdata) {
   }
     
   
-  
+  async function getSecret() {
+    const secret = await secretClient.getSecret(secretName);
+    return secret.value;
+  }
