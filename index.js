@@ -1,17 +1,21 @@
 const express = require('express');
+const rateLimit= require('express-rate-limit');
 const jwt = require('jsonwebtoken');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger');
 //const swaggerjsdoc = require('swagger-jsdoc');
 
-
+const limiter =rateLimit({
+  windowMs: 15*1000, // 15 seconds
+  max:5 ,// limit each IP to 5 requests per windowMs
+  message: "Too many requests from this IP, please try again later"
+})
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
 
 const app = express();
 const port = process.env.PORT || 6000;
 const{ MongoClient, ServerApiVersion } = require('mongodb');
-const e = require('express');
 const uri = 'mongodb+srv://CHUA0528:CCF12345@chua.ch7khae.mongodb.net/';
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -28,6 +32,11 @@ client.connect();
 const approvalList = client.db("Visitor_Management_v1").collection("residentapprovalList")
 const user = client.db("Visitor_Management_v1").collection("users")
 const visitor = client.db("Visitor_Management_v1").collection("visitor")
+
+//limiting the number of requests
+app.use('/retrievevisitor_pass',limiter)
+app.use('/login',limiter)
+
 
 //decode of requests
 app.use(express.json());
@@ -67,14 +76,6 @@ app.post ('/login', async (req, res) => {
         });
       
       
-       
-      // res.write(loginUser.user_id + " has logged in!")
-      // res.write("\nWelcome "+ loginUser.name + "!")
-
-      //res.write("\nAll the residents(hosts) are listed below : \n"+JSON.stringify(hosts))
-
-      res.end("\nYour token : " + token)
-      res.send(hosts)
    
 
       }else{
