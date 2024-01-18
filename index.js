@@ -8,7 +8,7 @@ const swaggerDocument = require('./swagger');
 const limiter =rateLimit({
   windowMs: 15*1000, // 15 seconds
   max:5 ,// limit each IP to 5 requests per windowMs
-  message: "Too many requests from this IP, please try again later"
+  message: "Too many requests, please wait for 15 seconds then try again! Thank you!"
 })
 const bcrypt = require('bcryptjs');
 const saltRounds = 10;
