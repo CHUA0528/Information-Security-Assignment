@@ -689,20 +689,16 @@ async function findUser(newdata) {
 
 
   //generate token for login authentication
-async function generateToken(loginProfile){
+  function generateToken(loginProfile){
     
-    
-    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '10m' });
-  }  
+    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
+  }
 
   
   //verify generated tokens
-  async function verifyToken(req, res, next){
+  function verifyToken(req, res, next){
     let header = req.headers.authorization
     let token = header.split(' ')[1] //checking header
-    
-
-
     jwt.verify(token,'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword',function(err,decoded){
       if(err) {
         res.send(errorMessage() + "Token is not valid D:, go to the counter to exchange")
