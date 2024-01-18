@@ -698,9 +698,10 @@ async function findUser(newdata) {
 
 
   //generate token for login authentication
-  function generateToken(loginProfile){
+  async function generateToken(loginProfile){
+    secret = await getSecret()
     
-    return jwt.sign(loginProfile, 'UltimateSuperMegaTitanicBombasticGreatestBestPOGMadSuperiorTheOneandOnlySensationalSecretPassword', { expiresIn: '1h' });
+    return jwt.sign(loginProfile, secret, { expiresIn: '10m' });
   }
 
   
