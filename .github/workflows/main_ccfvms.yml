@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - CCFVMS
+name: Build and deploy Node.js app to Azure Web App - ccfvms
 
 on:
   push:
@@ -61,4 +61,5 @@ jobs:
           package: .
 
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_587E7708C9544C72880B3E102703DD9D }}
+
 
