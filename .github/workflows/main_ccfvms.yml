@@ -56,8 +56,9 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: 'CCFVMS'
+          app-name: 'ccfvms'
           slot-name: 'Production'
           package: .
 
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_587E7708C9544C72880B3E102703DD9D }}
+
